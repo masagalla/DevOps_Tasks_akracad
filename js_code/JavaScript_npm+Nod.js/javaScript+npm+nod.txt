@@ -1,0 +1,94 @@
+📄 JS-based Code Deployment using EC2 + NPM + Node.js + Apache2
+=================================================================
+✅ Overview:
+This guide will help you launch a website built with JavaScript (using Node.js and NPM) on an Ubuntu-based AWS EC2 server. You’ll install the necessary tools, build the project, and host it using Apache2.
+
+🖥️ Step 1: Launch an EC2 Instance on AWS
+-----------------------------------------
+Login to AWS Console. 
+
+Navigate to EC2 → Launch Instance:
+
+OS: Ubuntu (preferably 20.04 or 22.04)
+
+Instance Type: t2.micro or t3.micro
+
+Configure Security Group:
+
+Allow SSH (port 22) — so you can connect remotely
+
+Allow HTTP (port 80) — so your website is visible
+
+Launch the instance and note the Public IP Address.
+
+ Step 2: Connect to the EC2 Instanc
+----------------------------------------
+Open your terminal and connect using SSH:
+
+ssh -i <your-key.pem> ubuntu@<public-ip>
+Update packages:
+
+
+sudo apt update
+Install Node.js and NPM:
+
+sudo apt install npm -y
+Check versions (to confirm installation):
+
+node -v
+npm -v
+
+ Step 3: Clone and Build the Project
+----------------------------------------
+Clone your project from GitHub:
+
+
+git clone <your-repository-url>
+Move into the project folder:
+
+cd <your-project-folder>
+Install all dependencies (as defined in package.json):
+
+npm install
+Build the project:
+
+npm run build
+✅ A build/ folder will be created — this contains your final website files.
+
+🌐 Step 4: Install and Configure Apache2 Web Server
+----------------------------------------------------
+Install Apache2:
+
+sudo apt install apache2 -y
+Start Apache2:
+
+sudo systemctl start apache2
+Navigate to Apache’s root folder:
+
+cd /var/www/html/
+Remove the default Apache page:
+
+sudo rm -f index.html
+Copy your built website files to Apache's root:
+
+sudo cp -r /home/ubuntu/<your-project-folder>/build/* .
+✅ Use pwd inside the build folder if you’re unsure about the path.
+
+Restart Apache2 to load your site:
+
+sudo systemctl restart apache2
+
+🌍 Step 5: Access Your Website
+-------------------------------
+Open your browser and go to:
+
+http://<your-ec2-public-ip>
+You should now see your deployed JS website live!
+
+📌 Notes:
+You can use a custom domain with Route53 + EC2 if needed.
+
+For React apps using BrowserRouter, consider Apache rewrite rules for route handling.
+
+Always keep backups and consider setting up HTTPS for production (with Let’s Encrypt).
+
