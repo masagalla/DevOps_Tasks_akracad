@@ -1,0 +1,99 @@
+python_documetantation 
+======================
+
+🗳️ Python Voting App Setup Documentation
+This guide walks you through the process of installing and running a Python Voting App using Flask, Redis, and Gunicorn.
+
+📌 Prerequisites
+A Linux-based system (Ubuntu preferred)
+
+Python 3 installed
+
+Internet connection
+
+Access to a terminal (with sudo privileges)
+
+📥 Step 1: System Update & Project Cloning
+=============================================
+
+sudo -i                           # Switch to root user
+apt update                       # Update package list
+git clone <url>                  # Clone the repository from GitHub or source
+cd <example-voting-app>         # Navigate to the cloned directory
+cd vote                         # Enter the vote application directory
+cat requirements.txt            # (Optional) View required Python packages
+
+🐍 Step 2: Python & Virtual Environment Setup
+-----------------------------------------------
+
+apt install python3-flask       # Install Flask for Python 3
+apt install python3-venv        # Install Python virtual environment support
+
+python3 -m venv myenv           # Create a virtual environment named 'myenv'
+source myenv/bin/activate       # Activate the virtual environment
+
+📦 Step 3: Install Required Python Packages
+---------------------------------------------
+
+pip3 install flask              # Install Flask
+pip3 install redis              # Install Redis package for Python
+🛠️ Step 4: Modify app.py
+Edit the app.py file:
+
+vi app.py
+Remove the following lines (if present):
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+🛠️ Step 5: Create/Edit wsgi.py
+
+vi wsgi.py
+Add or update the following code:
+
+from app import app
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
+
+🔥 Step 6: Install & Run Gunicorn
+-----------------------------------
+
+apt install gunicorn                      # Install Gunicorn WSGI server
+
+# Run the app using Gunicorn
+gunicorn app:app -b 0.0.0.0:5001 --log-file - --access-logfile - --workers 4 --keep-alive 0
+app:app → First app is the filename (app.py), second app is the Flask application object.
+
+-b 0.0.0.0:5001 → Bind to all interfaces on port 5001.
+
+--workers 4 → Run with 4 worker processes.
+
+
+🌐 Step 7: Access the App
+--------------------------
+Copy the public IP address of your server (e.g., AWS EC2 instance).
+
+Paste it into your browser with the port number:
+
+
+http://<your-ip-address>:5001
+Example:
+
+
+http://54.145.23.67:5001
+
+✅ Final Notes
+Ensure port 5001 is open in your cloud provider’s firewall (e.g., AWS Security Group).
+
+Use deactivate to exit the Python virtual environment when done.
+
+You can run this setup as a service using systemd for production deployment.
+
+
+
+
+
+
+
+
+
