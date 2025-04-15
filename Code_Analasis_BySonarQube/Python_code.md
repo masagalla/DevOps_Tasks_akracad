@@ -1,156 +1,136 @@
-#  SonarQube Testing of  JS, Code (Two-Server Setup)
+## Python Code Analysis by integrating_SonarQube
 
-##  Goal  
-Set up **two separate servers**:  
--  **Build Server**: for compiling code and running SonarQube analysis  
--  **SonarQube Server**: for hosting SonarQube and viewing results  
+This document provides a step-by-step guide to set up SonarQube for analyzing a Python project using two AWS EC2 instances.
 
-Test static analysis using SonarQube for Java, JavaScript, and Python projects.
+##Step 1: Create EC2 Instance for Python Project
 
----
+Instance Name: Python_server
 
-##  1. SonarQube Server Setup
+OS: Ubuntu (latest version)
 
-###  OS Info  
-```bash
-uname -a
-# Linux ip-172-31-20-239 ... x86_64 GNU/Linux
-```
+Instance Type: t2.micro
 
-###  Install Prerequisites  
-```bash
-sudo apt update -y
-sudo apt install -y unzip
-sudo apt install openjdk-17-jre-headless -y
-```
+Key Pair: Choose or create one
 
-###  Download and Extract SonarQube  
-```bash
+Security Group:
+
+Allow SSH (22)
+
+Network: Default or custom
+
+Storage: Default
+
+Launch the instance after configuration.
+
+Step 2: Connect to Python Server and Set Up Environment
+
+Connect to the instance:
+
+ssh -i "<your-key>.pem" ubuntu@<Python_Server_Public_IP>
+
+Update the system:
+
+sudo apt update
+
+Clone the project repository:
+
+git clone https://github.com/xaravind/Documentation.git
+cd Documentation/python code
+
+Download and install SonarScanner:
+
+wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+sudo apt install unzip
+unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+echo 'export PATH=$PATH:/opt/sonar-scanner/bin' >> ~/.bashrc
+source ~/.bashrc
+
+Step 3: Create EC2 Instance for SonarQube
+
+Instance Name: SonarQube_server
+
+OS: Ubuntu (latest version)
+
+Instance Type: t2.medium
+
+Key Pair: Use the same or another
+
+Security Group:
+
+Allow SSH (22)
+
+Allow Custom TCP (9000)
+
+Network: Default or custom
+
+Storage: Default
+
+Launch the instance after configuration.
+
+Step 4: Set Up SonarQube Server
+
+Connect to the SonarQube instance:
+
+ssh -i "<your-key>.pem" ubuntu@<SonarQube_Server_Public_IP>
+
+Update the system:
+
+sudo apt update
+
+Install Java JDK:
+
+sudo apt install openjdk-17-jdk
+
+Download and set up SonarQube:
+
 wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-25.4.0.105899.zip
+sudo apt install unzip
 unzip sonarqube-25.4.0.105899.zip
-```
-
-###  Start SonarQube  
-```bash
-cd sonarqube-25.4.0.105899/bin/linux-x86-64
+cd sonarqube-25.4.0.105899/bin/linux-x86-64/
 ./sonar.sh start
+# Optional: Check status
 ./sonar.sh status
-```
 
-Expected Output:
-```
-Starting SonarQube...
-Started SonarQube.
-SonarQube is running (PID)
-```
+Step 5: Access SonarQube Web Interface
 
-### Open SonarQube in Browser  
-```bash
-curl ifconfig.me
-# Output: 18.232.140.167A
-```
+Open a browser in Incognito Mode.
 
-Access SonarQube at:  
-**http://44.202.193.53:9000**  
-Login: `admin / admin`
-Reset admin Password
+Visit:
 
----
+http://<SonarQube_Public_IP>:9000
 
-##  2. Configure SonarQube Projects (Web UI)
+Login with default credentials:
 
-For each language (Java / JS / Python):
+Username: admin
 
-Go to **Projects** => **Create Project** 
+Password: admin
 
-choose **Local project** 
+Change the password when prompted.
 
+Create a new project and generate a token.
 
-give **Required details** 
+Step 6: Run SonarScanner from Python Server
 
+Go back to the Python Server.
 
-Select **Use global settings**, then choose **Locally**
+Run the following command using your project key and token:
 
-Choose **Locally** 
- Enter:
-   - Project key (e.g., `js`)
-   - Project name
-![Image](https://github.com/user-attachments/assets/3137a312-1b3f-476c-a4b2-01dc5bc07cfc)
+sonar-scanner \
+  -Dsonar.projectKey=Python_project \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=http://<SonarQube_Public_IP>:9000 \
+  -Dsonar.token=<Generated_Token>
 
+✅ If successful, you'll see EXECUTION SUCCESS.
 
+Step 7: View Analysis Results
 
-Generate a token:
- Click **Generate** => **Continue**
+Go back to the SonarQube Web UI.
 
-In 2. choose **the package/code** and **copy the code**
+Open your project dashboard.
 
-![Image](https://github.com/user-attachments/assets/9ac205ef-08ba-4fa9-a0a5-c2250b2d4fc7)
----
+Review analysis results: bugs, vulnerabilities, code smells, and more.
 
-##  3. Build Server Setup (NPM + SonarScanner)
-
-###  Install General Prerequisites  
-```bash
-apt update -y
-apt install git -y
-apt install npm -y
-```
-
-###  Clone JS Project and Setup  
-```bash
-git clone https://github.com/<your-js-repo>.git
-cd js_code/
-npm install
-npm run build
-npm install -g @sonar/scan
-```
-```bash
-root@ip-172-31-26-213:~/Documentation/js_code# ll
-total 208
-drwxr-xr-x 4 root root   4096 Apr 13 09:33 ./
-drwxr-xr-x 6 root root   4096 Apr 13 09:33 ../
-drwxr-xr-x 3 root root   4096 Apr 13 09:33 dist/
--rw-r--r-- 1 root root 172684 Apr 13 09:33 package-lock.json
--rw-r--r-- 1 root root   1086 Apr 13 09:33 package.json
--rw-r--r-- 1 root root   6041 Apr 13 09:33 readme.md
-drwxr-xr-x 4 root root   4096 Apr 13 09:33 src/
--rw-r--r-- 1 root root    322 Apr 13 09:33 tsconfig.json
--rw-r--r-- 1 root root   1317 Apr 13 09:33 webpack.config.js
-```
-![Image](https://github.com/user-attachments/assets/9ac205ef-08ba-4fa9-a0a5-c2250b2d4fc7)
-
-###  Create `sonar-project.properties`
-```bash
-vi sonar-project.properties
-```
-
-Paste the following:
-```properties
-sonar.projectKey=js
-sonar.projectName=js
-sonar.projectVersion=1.0
-sonar.sources=.
-sonar.host.url=http://18.232.140.167:9000
-sonar.login=sqp_ff83de42e0c3931f39f99357a83f4c0fa98efbc6
-```
-
-###  Run SonarQube Scanner  
-```bash
-sonar-scanner
-```
-
-Results will be uploaded to the SonarQube server.
-
-##   View Results in SonarQube
-
-Open browser => ex :- http://18.232.140.167:9000 => Select your **project dashboard**
-
-Review for each project:
-- Code smells
-- Bugs
-- Vulnerabilities
-- Test coverage (if applicable)
-
-![Image](https://github.com/user-attachments/assets/e3216177-b412-47d8-9d1c-497fa4a2726a)
----
+✅ SonarQube integration for Python code analysis is now complete!
 
